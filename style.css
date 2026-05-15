@@ -1,104 +1,184 @@
-:root {
-  --bg: #0a0e1a; --bg2: #0f1628; --bg3: #151d35; --bg4: #1a2440;
-  --acc: #1a6fff; --acc2: #00d4ff; --grn: #00ff88; --red: #ff3355;
-  --amb: #ffaa00; --txt: #c8d8ff; --txt2: #7090cc; --txt3: #3d5a80; --brd: #1e3060; --brd2: #2a4080;
-  --header-h: 55px;
+const wsUrl = "ws://localhost:8080/pda";
+let ws = null;
+let wsReconnectTimer = null;
+let ttsOn = true;
+let currentUser = { name: '', role: '', placa: '' };
+let activeChannelId = '';
+let serviceStartTime = null;
+let radioLogs = {};
+
+const CONFIG_ROLES = {
+  policia: {
+    label: 'POLICÍA NACIONAL',
+    chs: [
+      { id: 'alertas_policia', name: '🚨 Alertas' },
+      { id: 'busca_captura', name: '🎯 Buscados' },
+      { id: 'reg_personas', name: '👥 Personas' },
+      { id: 'reg_vehiculos', name: '🚗 Vehículos' }
+    ]
+  },
+  ems: {
+    label: 'EMS · EMERGENCIAS',
+    chs: [
+      { id: 'alertas_ems', name: '🏥 Emergencias' },
+      { id: 'reg_personas', name: '👥 Pacientes' }
+    ]
+  },
+  ejercito: {
+    label: 'EJÉRCITO',
+    chs: [
+      { id: 'alertas_ejercito', name: '⚔️ Operaciones' },
+      { id: 'vehiculos', name: '🚗 Despliegues' }
+    ]
+  },
+  secreto: {
+    label: 'UNIDAD CLASIFICADA',
+    chs: [
+      { id: 'radio_secreta', name: '🤫 Operaciones S.' },
+      { id: 'avisos', name: '📢 Inteligencia' }
+    ]
+  }
+};
+
+function doLogin() {
+  currentUser.name = document.getElementById('cnName').value.trim() || 'Agente Anónimo';
+  currentUser.role = document.getElementById('cnRole').value;
+  currentUser.placa = document.getElementById('cnPlaca').value.trim() || '00-00';
+
+  document.getElementById('pfrName').textContent = currentUser.name.toUpperCase();
+  document.getElementById('pfrMeta').textContent = `${CONFIG_ROLES[currentUser.role].label} | ${currentUser.placa}`;
+
+  CONFIG_ROLES[currentUser.role].chs.forEach(ch => { radioLogs[ch.id] = []; });
+  activeChannelId = CONFIG_ROLES[currentUser.role].chs[0].id;
+
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainDashboard').classList.remove('hidden');
+
+  renderChannels();
+  refreshRadioMsgs();
+  startClock();
+  serviceStartTime = Date.now();
+  connectWS();
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { background: #000; font-family: 'Segoe UI', sans-serif; color: var(--txt); overflow: hidden; }
-
-#app {
-  background: var(--bg); width: 100vw; height: 100vh;
-  display: flex; flex-direction: column; overflow: hidden; position: relative;
-}
-
-@media (min-width: 1024px) {
-  #app {
-    max-width: 1200px; height: 90vh; margin: 5vh auto;
-    border-radius: 12px; border: 1px solid var(--brd2);
-    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+function toggleMenu() {
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('mobileOverlay').classList.toggle('active');
   }
 }
 
-.hidden { display: none !important; }
-
-/* LOGIN SCREEN */
-.login-screen { padding: 2rem; text-align: center; display: flex; align-items: center; justify-content: center; height: 100%; }
-.login-card { background: var(--bg2); border: 1px solid var(--brd2); border-radius: 16px; padding: 2.5rem 2rem; width: 100%; max-width: 400px; box-shadow: 0 0 40px rgba(0,0,0,.6); }
-.login-title { font-size: 24px; color: var(--acc2); margin-bottom: 25px; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 3px; }
-.field-group { margin-bottom: 1.4rem; text-align: left; }
-.field-label { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--txt2); text-transform: uppercase; margin-bottom: 6px; display: block; }
-.field-input { width: 100%; background: var(--bg3); border: 1px solid var(--brd); border-radius: 8px; color: var(--txt); padding: 12px; outline: none; font-size: 14px; }
-.field-input:focus { border-color: var(--acc2); }
-
-.btn-login { width: 100%; background: linear-gradient(135deg, var(--acc), var(--acc2)); border: none; border-radius: 8px; color: #fff; padding: 14px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; text-transform: uppercase; }
-
-/* LAYOUT & TOPBAR */
-.topbar { background: var(--bg2); padding: 0 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--brd); height: var(--header-h); z-index: 10; }
-.menu-toggle { display: none; background: transparent; border: none; color: var(--acc2); font-size: 26px; cursor: pointer; }
-.topbar-brand { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: var(--acc2); display: flex; align-items: center; gap: 8px; font-size: 18px; }
-.brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--grn); }
-.topbar-right { display: flex; align-items: center; gap: 15px; font-family: 'Share Tech Mono', monospace; font-size: 13px; }
-
-/* WS STATUS */
-.ws-status { display: flex; align-items: center; gap: 6px; font-family: 'Share Tech Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 4px; border: 1px solid transparent; }
-.ws-status.connecting { color: var(--amb); border-color: rgba(255,179,0,.3); background: rgba(255,179,0,.05); }
-.ws-status.connected { color: var(--grn); border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.05); }
-.ws-status.disconnected { color: var(--red); border-color: rgba(255,51,85,.3); background: rgba(255,51,85,.05); }
-.ws-dot { width: 6px; height: 6px; border-radius: 50%; }
-.ws-dot.connecting { background: var(--amb); animation: pulse 1s infinite; }
-.ws-dot.connected { background: var(--grn); }
-.ws-dot.disconnected { background: var(--red); }
-@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.3 } }
-
-/* SIDEBAR & CHANNELS */
-.main-wrapper { display: flex; flex: 1; overflow: hidden; position: relative; }
-.sidebar { width: 260px; background: var(--bg2); border-right: 1px solid var(--brd2); display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5; }
-.nav-section { padding: 10px; flex: 1; overflow-y: auto; }
-.nav-label { font-size: 10px; color: var(--txt3); letter-spacing: 2px; padding: 10px 5px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
-.ch-col { display: flex; flex-direction: column; gap: 4px; }
-.ch-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--txt2); display: flex; align-items: center; gap: 8px; }
-.ch-item.active { background: var(--bg4); color: var(--acc2); font-weight: bold; }
-
-.profile-banner { background: var(--bg3); padding: 15px 12px; border-bottom: 1px solid var(--brd); display: flex; justify-content: space-between; align-items: center; }
-.u-name { font-weight: bold; font-size: 14px; color: var(--txt); }
-.u-meta { font-size: 10px; color: var(--txt2); font-family: 'Share Tech Mono', monospace; }
-.sidebar-footer { padding: 12px; border-top: 1px solid var(--brd2); background: var(--bg); }
-.service-display { font-size: 11px; font-family: 'Share Tech Mono', monospace; color: var(--txt2); text-align: center; }
-
-/* FEED INTERFACE */
-.content-area { flex: 1; padding: 15px; background: var(--bg); overflow: hidden; display: flex; flex-direction: column; }
-.radio-wrap { background: var(--bg2); border: 1px solid var(--brd); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
-.radio-header { background: var(--bg3); padding: 12px 15px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--brd); align-items: center; }
-.radio-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; }
-.radio-freq { font-family: 'Share Tech Mono', monospace; color: var(--amb); font-size: 11px; }
-.chat-col { flex: 1; display: flex; flex-direction: column; background: var(--bg2); overflow: hidden; }
-.msgs-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-
-.chat-msg { display: flex; font-size: 13px; padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--brd); }
-.chat-msg.new-msg { animation: flashNew 0.8s ease; }
-.chat-author { font-weight: bold; color: var(--acc2); margin-right: 6px; }
-.chat-time { font-size: 9px; color: var(--txt3); margin-left: auto; align-self: center; }
-
-.radio-footer-controls { padding: 10px; background: var(--bg3); border-top: 1px solid var(--brd2); display: flex; gap: 10px; }
-.btn-send { background: var(--acc); border: none; color: white; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-.loading-msg { color: var(--txt3); text-align: center; padding-top: 40px; font-size: 11px; }
-
-.alert-msg { color: var(--red); font-weight: bold; }
-.wanted-msg { color: var(--amb); font-weight: bold; }
-.vehicle-msg { color: var(--acc2); }
-.person-msg { color: var(--grn); }
-
-@keyframes flashNew { 0% { background: rgba(0,200,255,.15) } 100% { background: transparent } }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .menu-toggle { display: block; }
-  .sidebar { position: absolute; top: 0; left: 0; bottom: 0; transform: translateX(-100%); box-shadow: 5px 0 25px rgba(0,0,0,0.8); }
-  .sidebar.open { transform: translateX(0); }
-  .mobile-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 4; }
-  .mobile-overlay.active { display: block; }
-  .ws-status span { display: none; }
-  .ws-status .ws-dot { display: block; width: 8px; height: 8px; }
+function renderChannels() {
+  const container = document.getElementById('radioChannels');
+  container.innerHTML = CONFIG_ROLES[currentUser.role].chs.map(ch => `
+    <div class="ch-item ${ch.id === activeChannelId ? 'active' : ''}" id="chTab-${ch.id}" onclick="switchChannel('${ch.id}')">
+      <span>●</span> ${ch.name}
+    </div>
+  `).join('');
 }
+
+function switchChannel(chId) {
+  activeChannelId = chId;
+  document.querySelectorAll('.ch-item').forEach(el => el.classList.remove('active'));
+  const activeTab = document.getElementById(`chTab-${chId}`);
+  if(activeTab) activeTab.classList.add('active');
+  refreshRadioMsgs();
+  toggleMenu();
+}
+
+function refreshRadioMsgs() {
+  const container = document.getElementById('radioMsgs');
+  const logs = radioLogs[activeChannelId] || [];
+  if(logs.length === 0) {
+    container.innerHTML = `<div class="loading-msg">[Canal sin transmisiones]</div>`;
+    return;
+  }
+  container.innerHTML = logs.map(msg => `
+    <div class="chat-msg ${msg.isNew ? 'new-msg' : ''}">
+      <span class="chat-author">${escapeHtml(msg.author)}:</span>
+      <span class="${msg.style || ''}">${escapeHtml(msg.text)}</span>
+      <span class="chat-time">${msg.time}</span>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function connectWS() {
+  if(ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+  setWsStatus('connecting', 'CONECTANDO...');
+  try {
+    ws = new WebSocket(wsUrl);
+    ws.onopen = () => setWsStatus('connected', 'DISCORD CONECTADO');
+    ws.onmessage = (evt) => {
+      try {
+        const data = JSON.parse(evt.data);
+        if(data.type === 'discord_message') handleIncomingDiscordFeed(data);
+      } catch(e) {}
+    };
+    ws.onclose = () => { setWsStatus('disconnected', 'DESCONECTADO'); wsReconnectTimer = setTimeout(connectWS, 5000); };
+    ws.onerror = () => setWsStatus('disconnected', 'ERROR');
+  } catch(e) { setWsStatus('disconnected', 'ERROR'); }
+}
+
+function setWsStatus(state, label) {
+  const el = document.getElementById('wsStatus'); const dot = document.getElementById('wsDot'); const lbl = document.getElementById('wsLabel');
+  if(el) el.className = 'ws-status ' + state; if(dot) dot.className = 'ws-dot ' + state; if(lbl) lbl.textContent = label;
+}
+
+function handleIncomingDiscordFeed(msg) {
+  const targetSection = msg.section;
+  const entry = { author: msg.author, text: msg.content, time: msg.time || getShortTime(), style: detectContentStyle(msg.content), isNew: true };
+  if(!radioLogs[targetSection]) radioLogs[targetSection] = [];
+  radioLogs[targetSection].push(entry);
+  if(activeChannelId === targetSection) { refreshRadioMsgs(); speakRadio(`${entry.author} dice: ${entry.text}`); }
+}
+
+function sendRadioMsg() {
+  const input = document.getElementById('radioInput'); const text = input.value.trim(); if(!text) return;
+  if(ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'pda_message', author: currentUser.name, placa: currentUser.placa, role: currentUser.role, section: activeChannelId, content: text, time: getShortTime() }));
+  }
+  if(!radioLogs[activeChannelId]) radioLogs[activeChannelId] = [];
+  radioLogs[activeChannelId].push({ author: currentUser.name, text: text, time: getShortTime(), style: '', isNew: false });
+  input.value = ''; refreshRadioMsgs();
+}
+
+function speakRadio(phrase) {
+  if(!ttsOn) return; window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(phrase);
+  utterance.pitch = 0.9; utterance.rate = 1.05;
+  const voices = window.speechSynthesis.getVoices();
+  const spanishVoice = voices.find(v => v.lang.startsWith('es')) || voices[0];
+  if(spanishVoice) utterance.voice = spanishVoice;
+  window.speechSynthesis.speak(utterance);
+}
+
+function toggleTTS() {
+  ttsOn = !ttsOn; const btn = document.getElementById('ttsTog');
+  if(btn) { btn.className = 'tts-tog' + (ttsOn ? ' on' : ''); btn.textContent = ttsOn ? 'VOZ ON' : 'VOZ OFF'; }
+}
+
+function detectContentStyle(txt) {
+  const t = txt.toUpperCase();
+  if(t.includes('ALERTA') || t.includes('CÓDIGO 3')) return 'alert-msg';
+  if(t.includes('BUSCADO') || t.includes('REQUERIDO')) return 'wanted-msg';
+  if(t.includes('PATENTE') || t.includes('VEHÍCULO')) return 'vehicle-msg';
+  return '';
+}
+
+function getShortTime() { return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); }
+
+function startClock() {
+  setInterval(() => {
+    const now = new Date(); const cl = document.getElementById('clockDisplay'); const dt = document.getElementById('dateDisplay'); const st = document.getElementById('serviceTime');
+    if(cl) cl.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if(dt) dt.textContent = now.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+    if (serviceStartTime) {
+      const diff = Math.floor((Date.now() - serviceStartTime) / 1000);
+      const hrs = String(Math.floor(diff / 3600)).padStart(2, '0'); const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0'); const secs = String(diff % 60).padStart(2, '0');
+      if(st) st.textContent = `${hrs}:${mins}:${secs}`;
+    }
+  }, 1000);
+}
+
+function escapeHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
