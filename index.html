@@ -3,45 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PDA Secure System - Discord Auth</title>
+    <title>PDA SECURE SYSTEM</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app">
-        <div id="loginScreen">
-            <div class="login-logo" style="font-size:50px;margin-bottom:10px;">🛡</div>
-            <div class="login-title" style="font-size:22px;font-weight:bold;letter-spacing:3px;">SISTEMA PDA</div>
-            <div class="login-sub" style="font-size:10px;color:#888;margin-bottom:30px;">ACCESO CENTRALIZADO PARA FACCIONES</div>
-            
-            <div class="login-card">
-                <button class="btn-login" onclick="loginWithDiscord()" style="background:#5865F2; display:flex; align-items:center; justify-content:center; gap:12px; border:none; padding:15px; color:#fff; font-weight:bold; width:100%; cursor:pointer; border-radius:4px;">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" width="20" style="filter:invert(1);">
-                    ENTRAR CON DISCORD
-                </button>
-                <div id="loginStatus" style="font-size:10px; margin-top:15px; color:#555;">SISTEMA DE VERIFICACIÓN AUTOMÁTICA</div>
+        <div id="loginScreen" class="login-container">
+            <div class="login-box">
+                <div class="login-logo">🛡️</div>
+                <h1 class="login-title">SISTEMA PDA</h1>
+                <p class="login-subtitle">UNIDAD DE FUERZAS DE SEGURIDAD</p>
+                
+                <div class="auth-section">
+                    <p style="font-size: 10px; color: #888; margin-bottom: 20px; letter-spacing: 2px;">AUTENTICACIÓN REQUERIDA</p>
+                    
+                    <button onclick="loginWithDiscord()" class="btn-discord">
+                        <img src="https://assets-global.website-files.com/6257adef93867e3c8458b8c0/6257af073a344d2165034079_icon_clyde_blurple_RGB.svg" width="20" style="margin-right: 10px;">
+                        ENTRAR CON DISCORD
+                    </button>
+                </div>
+                
+                <div id="loginErr" class="error-msg"></div>
             </div>
         </div>
 
-        <div id="mainInterface" style="display:none; flex-direction:column;">
+        <div id="mainInterface" style="display:none;">
             <div class="topbar">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <div class="topbar-brand">⬡ PDA SECURE</div>
-                    <button onclick="toggleFullScreen()" class="btn-fullscreen">全 PANTALLA COMPLETA</button>
-                </div>
-                <div id="userInfo" style="display:flex; align-items:center; gap:10px;">
-                    <div style="text-align:right;">
-                        <div id="userName" style="font-size:13px; font-weight:bold;">Cargando...</div>
-                        <div id="userRank" style="font-size:9px; color:var(--acc2);">VERIFICANDO RANGO</div>
+                <div class="brand">⬡ PDA SECURE</div>
+                
+                <div class="user-info-top">
+                    <div class="user-details">
+                        <span id="userName" class="name-text">Cargando...</span>
+                        <span id="userRank" class="rank-text">IDENTIFICANDO...</span>
                     </div>
-                    <img id="userAvatar" src="" width="35" style="border-radius:50%; border:1px solid var(--acc);">
+                    <img id="userAvatar" src="" alt="Perfil" class="avatar-img">
+                </div>
+
+                <div class="actions">
+                    <button onclick="toggleFullScreen()" class="btn-tool">⛶</button>
                 </div>
             </div>
+
             <div class="main-body">
-                <div class="sidebar" id="sidebar"></div>
-                <div class="content" id="contentArea"></div>
+                <aside class="sidebar" id="sidebar">
+                    </aside>
+                
+                <main class="content-area" id="contentArea">
+                    <div class="welcome-msg">
+                        <h2>Sistema Operativo Inicializado</h2>
+                        <p>Seleccione una opción del menú lateral para comenzar.</p>
+                    </div>
+                </main>
             </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
