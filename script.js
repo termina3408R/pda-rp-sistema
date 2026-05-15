@@ -2,7 +2,7 @@
 // CONFIGURACIÓN DE DISCORD (TU APP)
 // ==========================================
 const CLIENT_ID = '1504647214008500314'; 
-const REDIRECT_URI = window.location.origin + window.location.pathname;
+const REDIRECT_URI = https://termina3408r.github.io/pda-rp-sistema/;
 
 // ==========================================
 // BASE DE DATOS DE PERSONAL (MANUAL)
