@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PDA Táctica LSPD - Multiplataforma</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+    <div id="loginScreen">
+        <div class="login-card">
+            <div class="login-icon">🛡️</div>
+            <h1 class="login-title">SISTEMA PDA</h1>
+            <p class="login-subtitle">SEGURIDAD TÁCTICA MULTIPLATAFORMA</p>
+            
+            <button class="btn-discord" onclick="loginWithDiscord()">
+                CONECTAR CON DISCORD
+            </button>
+        </div>
+    </div>
+
+    <div id="mainInterface" style="display: none; height: 100%; flex-direction: column;">
+        
+        <div class="topbar">
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+            <div class="topbar-brand">⬡ LSPD SECURE</div>
+            
+            <div class="user-info">
+                <div class="user-text">
+                    <span id="uName" class="u-name">CARGANDO...</span>
+                    <span id="uRank" class="u-rank">IDENTIFICANDO</span>
+                </div>
+                <img id="uAvatar" class="u-avatar" src="" alt="Avatar">
+            </div>
+        </div>
+
+        <div class="main-wrapper">
+            <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMenu()"></div>
+            
+            <aside class="sidebar" id="sidebar">
+                <div class="nav-section">
+                    <div class="nav-label">General</div>
+                    <button class="nav-item active" onclick="switchScreen('scr-inicio', this)">Inicio</button>
+                    <button class="nav-item" onclick="switchScreen('scr-registro', this)">Base de Datos / Multas</button>
+                    
+                    <div class="nav-label">Comunicaciones</div>
+                    <button class="nav-item" onclick="switchScreen('scr-radio', this)">Radio Táctica</button>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <div id="clockTime" class="time-display">00:00:00</div>
+                    <div class="service-display">SERVICIO: <span id="serviceTime">00:00:00</span></div>
+                </div>
+            </aside>
+
+            <main class="content-area">
+                
+                <div id="scr-inicio" class="screen active">
+                    <h2 class="screen-title">PANEL DE CONTROL</h2>
+                    <div class="grid-cards">
+                        <div class="card">
+                            <div class="card-title">Estado Red</div>
+                            <div class="card-value" style="color: var(--grn);">ONLINE</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Nivel Alerta</div>
+                            <div class="card-value" style="color: var(--amb);">DEFCON 4</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-box welcome-box">
+                        <h3>Bienvenido, <span id="welcomeName">Oficial</span></h3>
+                        <p>El sistema PDA ha sido inicializado correctamente en su dispositivo. Recuerde que todas las acciones y comunicaciones en la red de radio están siendo monitorizadas por el Despacho Central.</p>
+                    </div>
+                </div>
+
+                <div id="scr-registro" class="screen">
+                    <h2 class="screen-title">BÚSQUEDA Y REGISTRO</h2>
+                    <div class="form-box">
+                        <div class="input-group">
+                            <label>Buscar Ciudadano (Nombre o DNI)</label>
+                            <input type="text" placeholder="Ingrese datos...">
+                        </div>
+                        <button class="btn-action">EJECUTAR BÚSQUEDA</button>
+                    </div>
+                    
+                    <div class="form-box">
+                        <h3 class="form-subtitle">Emitir Multa Rápida</h3>
+                        <div class="input-group">
+                            <label>Sujeto</label>
+                            <input type="text" placeholder="Nombre completo...">
+                        </div>
+                        <div class="input-group">
+                            <label>Motivo de la infracción</label>
+                            <textarea placeholder="Ej: Conducción temeraria, exceso de velocidad..."></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Importe ($)</label>
+                            <input type="number" placeholder="Ej: 5000">
+                        </div>
+                        <button class="btn-action btn-warning">PROCESAR MULTA</button>
+                    </div>
+                </div>
+
+                <div id="scr-radio" class="screen">
+                    <div class="radio-box">
+                        <div class="radio-header">
+                            <span>MALLA POLICIAL (CH 1)</span>
+                            <span style="color: var(--grn);">REC</span>
+                        </div>
+                        <div class="radio-msgs" id="radioLog">
+                            <div class="msg"><div class="msg-author">CENTRAL [00:00]</div>Sistema de comunicaciones encriptado inicializado.</div>
+                        </div>
+                        <div class="radio-controls">
+                            <input type="text" id="radioInput" placeholder="Escriba código..." class="radio-input">
+                            <button class="ptt-btn" onclick="sendRadio()">ENVIAR (PTT)</button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
