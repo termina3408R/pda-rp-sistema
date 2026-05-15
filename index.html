@@ -2,65 +2,46 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDA Secure System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>PDA Secure System - Discord Auth</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- PANTALLA DE LOGIN -->
         <div id="loginScreen">
-            <div class="login-logo" style="font-size:40px;margin-bottom:10px;">🛡</div>
-            <div class="login-title" style="font-size:20px;font-weight:bold;letter-spacing:3px;margin-bottom:5px;">SISTEMA PDA</div>
-            <div class="login-sub" style="font-size:9px;color:var(--txt2);letter-spacing:1px;margin-bottom:30px;">AUTENTICACIÓN POR PLACA · FUERZAS DE SEGURIDAD</div>
+            <div class="login-logo" style="font-size:50px;margin-bottom:10px;">🛡</div>
+            <div class="login-title" style="font-size:22px;font-weight:bold;letter-spacing:3px;">SISTEMA PDA</div>
+            <div class="login-sub" style="font-size:10px;color:#888;margin-bottom:30px;">ACCESO CENTRALIZADO PARA FACCIONES</div>
+            
             <div class="login-card">
-                <div style="font-size:10px; color:var(--acc2); margin-bottom:15px; letter-spacing:2px; text-align:center;">
-                    AUTENTICACIÓN POR PLACA
-                </div>
-                <label style="display:block;font-size:10px;color:var(--acc2);margin-bottom:8px;letter-spacing:1px;">NÚMERO DE PLACA</label>
-                <input type="text" id="inputPlaca" placeholder="Ej: P-01" onkeydown="if(event.key==='Enter')handleLogin()" 
-                       style="width:100%;background:var(--bg3);border:1px solid var(--brd2);padding:12px;color:#fff;font-family:inherit;outline:none;margin-bottom:20px;text-align:center;letter-spacing:2px;"/>
-                
-                <button class="btn-login" onclick="handleLogin()" 
-                        style="width:100%;background:linear-gradient(90deg, var(--acc), var(--acc2));border:none;padding:12px;color:#fff;font-weight:bold;cursor:pointer;letter-spacing:1px;transition:all .3s;">
-                    ⟶ ACCEDER AL SISTEMA
+                <button class="btn-login" onclick="loginWithDiscord()" style="background:#5865F2; display:flex; align-items:center; justify-content:center; gap:12px; border:none; padding:15px; color:#fff; font-weight:bold; width:100%; cursor:pointer; border-radius:4px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" width="20" style="filter:invert(1);">
+                    ENTRAR CON DISCORD
                 </button>
-                <div class="login-err" id="loginErr" style="color:var(--red);font-size:11px;margin-top:12px;text-align:center;min-height:14px;"></div>
+                <div id="loginStatus" style="font-size:10px; margin-top:15px; color:#555;">SISTEMA DE VERIFICACIÓN AUTOMÁTICA</div>
             </div>
         </div>
 
-        <!-- OVERLAY DE SEGURIDAD -->
-        <div id="secretOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(5,7,15,0.98);z-index:2000;align-items:center;justify-content:center;">
-            <div class="secret-box" style="width:280px;background:var(--bg2);border:1px solid var(--sec);padding:30px;text-align:center;box-shadow:0 0 30px rgba(155,48,255,0.2);">
-                <h3 style="color:var(--sec);letter-spacing:2px;margin-bottom:15px;">⬡ ACCESO CLASIFICADO ⬡</h3>
-                <p style="font-size:11px;color:#7040aa;margin-bottom:.8rem;">Introduce el código de acceso</p>
-                <input type="password" id="secretCodeInput" placeholder="● ● ● ● ●" maxlength="10" style="width:100%;background:#100a1a;border:1px solid #3d1a66;padding:10px;color:var(--sec);text-align:center;margin-bottom:15px;outline:none;"/>
-                <button class="secret-btn" onclick="verifySecretCode()" style="width:100%;background:var(--sec);border:none;padding:10px;color:#fff;font-size:11px;cursor:pointer;margin-bottom:10px;">VERIFICAR</button>
-                <button class="secret-cancel" onclick="closeSecretOverlay()" style="background:transparent;border:none;color:#555;font-size:10px;cursor:pointer;">Cancelar</button>
-                <div style="color:var(--red);font-size:11px;margin-top:6px;" id="secretErr"></div>
+        <div id="mainInterface" style="display:none; flex-direction:column;">
+            <div class="topbar">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <div class="topbar-brand">⬡ PDA SECURE</div>
+                    <button onclick="toggleFullScreen()" class="btn-fullscreen">全 PANTALLA COMPLETA</button>
+                </div>
+                <div id="userInfo" style="display:flex; align-items:center; gap:10px;">
+                    <div style="text-align:right;">
+                        <div id="userName" style="font-size:13px; font-weight:bold;">Cargando...</div>
+                        <div id="userRank" style="font-size:9px; color:var(--acc2);">VERIFICANDO RANGO</div>
+                    </div>
+                    <img id="userAvatar" src="" width="35" style="border-radius:50%; border:1px solid var(--acc);">
+                </div>
+            </div>
+            <div class="main-body">
+                <div class="sidebar" id="sidebar"></div>
+                <div class="content" id="contentArea"></div>
             </div>
         </div>
-
-        <!-- INTERFAZ PRINCIPAL -->
-<div class="topbar" style="height:50px;background:var(--bg2);border-bottom:1px solid var(--brd2);display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
-    <div style="display:flex; align-items:center; gap:15px;">
-        <div class="topbar-brand" style="font-weight:bold;letter-spacing:2px;color:var(--acc2);font-size:14px;">⬡ PDA SECURE</div>
-        
-        <button onclick="toggleFullScreen()" style="background:none; border:1px solid var(--acc2); color:var(--acc2); padding:4px 10px; font-size:10px; cursor:pointer; border-radius:4px; text-transform:uppercase; letter-spacing:1px;">
-            全 Pantalla Completa
-        </button>
     </div>
-
-    <div style="display:flex;align-items:center;gap:14px;">
-        <div style="text-align:right;">
-            <div class="clock-time" id="clockDisplay" style="font-size:14px;font-weight:bold;color:#fff;">00:00:00</div>
-            <div class="clock-date" id="dateDisplay" style="font-size:9px;color:var(--txt2);text-transform:uppercase;">—</div>
-        </div>
-    </div>
-</div>
-
     <script src="script.js"></script>
 </body>
 </html>
