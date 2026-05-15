@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDA Secure System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -42,23 +44,22 @@
         </div>
 
         <!-- INTERFAZ PRINCIPAL -->
-        <div id="mainInterface" style="display:none;min-height:620px;flex-direction:column;">
-            <div class="topbar" style="height:50px;background:var(--bg2);border-bottom:1px solid var(--brd2);display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
-                <div class="topbar-brand" style="font-weight:bold;letter-spacing:2px;color:var(--acc2);font-size:14px;">⬡ PDA SECURE</div>
-                <div style="display:flex;align-items:center;gap:14px;">
-                    <div style="text-align:right;">
-                        <div class="clock-time" id="clockDisplay" style="font-size:14px;font-weight:bold;color:#fff;">00:00:00</div>
-                        <div class="clock-date" id="dateDisplay" style="font-size:9px;color:var(--txt2);text-transform:uppercase;">—</div>
-                        <div class="service-timer" style="font-size:9px;color:var(--grn);margin-top:2px;">SERVICIO: <span id="serviceTimer">00:00:00</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="main-body" style="display:flex;flex:1;height:calc(620px - 50px);">
-                <div class="sidebar" id="sidebar" style="width:200px;background:var(--bg2);border-right:1px solid var(--brd2);display:flex;flex-direction:column;padding:15px 0;"></div>
-                <div class="content" id="contentArea" style="flex:1;background:var(--bg);overflow-y:auto;padding:25px;position:relative;"></div>
-            </div>
+<div class="topbar" style="height:50px;background:var(--bg2);border-bottom:1px solid var(--brd2);display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <div style="display:flex; align-items:center; gap:15px;">
+        <div class="topbar-brand" style="font-weight:bold;letter-spacing:2px;color:var(--acc2);font-size:14px;">⬡ PDA SECURE</div>
+        
+        <button onclick="toggleFullScreen()" style="background:none; border:1px solid var(--acc2); color:var(--acc2); padding:4px 10px; font-size:10px; cursor:pointer; border-radius:4px; text-transform:uppercase; letter-spacing:1px;">
+            全 Pantalla Completa
+        </button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;">
+        <div style="text-align:right;">
+            <div class="clock-time" id="clockDisplay" style="font-size:14px;font-weight:bold;color:#fff;">00:00:00</div>
+            <div class="clock-date" id="dateDisplay" style="font-size:9px;color:var(--txt2);text-transform:uppercase;">—</div>
         </div>
     </div>
+</div>
 
     <script src="script.js"></script>
 </body>
