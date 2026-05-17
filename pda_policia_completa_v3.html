@@ -1,0 +1,892 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:transparent;font-family:'Courier New',monospace;}
+:root{
+  --bg:#0a0e1a;--bg2:#0f1628;--bg3:#151d35;--bg4:#1a2440;
+  --acc:#1a6fff;--acc2:#00d4ff;--grn:#00ff88;--red:#ff3355;
+  --amb:#ffaa00;--sec:#9b30ff;--ems-c:#ff4466;--arm:#4caf50;
+  --txt:#c8d8ff;--txt2:#7090cc;--brd:#1e3060;--brd2:#2a4080;
+}
+#app{background:var(--bg);color:var(--txt);border-radius:12px;border:1px solid var(--brd2);overflow:hidden;min-height:620px;}
+
+/* LOGIN */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:620px;padding:2rem;}
+.login-logo{font-size:38px;margin-bottom:.5rem;text-align:center;}
+.login-title{font-size:20px;font-weight:700;color:var(--acc2);letter-spacing:3px;text-transform:uppercase;text-align:center;}
+.login-sub{font-size:10px;color:var(--txt2);letter-spacing:2px;margin-top:4px;text-align:center;}
+.login-card{background:var(--bg2);border:1px solid var(--brd2);border-radius:10px;padding:1.8rem;width:100%;max-width:380px;margin-top:1.5rem;}
+.login-card label{font-size:10px;color:var(--txt2);letter-spacing:1px;display:block;margin-bottom:5px;margin-top:12px;}
+.login-card label:first-child{margin-top:0;}
+.login-card input,.login-card select{width:100%;background:var(--bg3);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;}
+.login-card input:focus,.login-card select:focus{border-color:var(--acc);}
+.login-card select option{background:var(--bg3);}
+.btn-login{width:100%;margin-top:1.2rem;background:var(--acc);border:none;border-radius:6px;color:#fff;padding:11px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;}
+.btn-login:hover{opacity:.85;}
+.login-err{color:var(--red);font-size:11px;margin-top:.5rem;text-align:center;}
+
+/* SECRET OVERLAY */
+#secretOverlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;border-radius:12px;}
+#secretOverlay.active{display:flex;}
+.secret-box{background:#1a0030;border:1px solid var(--sec);border-radius:10px;padding:1.8rem;max-width:300px;width:100%;text-align:center;}
+.secret-box h3{color:var(--sec);font-size:13px;letter-spacing:2px;margin-bottom:.8rem;}
+.secret-box input{width:100%;background:#0d0020;border:1px solid var(--sec);border-radius:6px;color:var(--sec);padding:9px;font-size:18px;text-align:center;letter-spacing:6px;font-family:'Courier New',monospace;outline:none;}
+.secret-btn{margin-top:.8rem;background:var(--sec);border:none;border-radius:6px;color:#fff;padding:9px 20px;font-family:'Courier New',monospace;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:2px;}
+.secret-cancel{margin-top:.4rem;background:transparent;border:1px solid var(--brd2);border-radius:6px;color:var(--txt2);padding:7px 20px;font-family:'Courier New',monospace;cursor:pointer;font-size:11px;display:block;width:100%;}
+
+/* MAIN */
+#mainInterface{display:none;flex-direction:column;min-height:620px;position:relative;}
+#mainInterface.active{display:flex;}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--brd2);padding:0 14px;display:flex;align-items:stretch;gap:0;min-height:56px;}
+.topbar-section{display:flex;align-items:center;padding:0 12px;border-right:1px solid var(--brd);}
+.topbar-section:last-child{border-right:none;margin-left:auto;border-left:1px solid var(--brd);}
+
+/* PERFIL en topbar */
+.profile-avatar{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;border:1px solid var(--brd2);}
+.profile-avatar.police{background:#0a2050;color:var(--acc2);}
+.profile-avatar.ems{background:#300020;color:var(--ems-c);}
+.profile-avatar.army{background:#0a2010;color:var(--arm);}
+.profile-avatar.secreto{background:#1a0030;color:var(--sec);}
+.profile-info{margin-left:10px;}
+.profile-name{font-size:12px;font-weight:700;color:var(--txt);letter-spacing:.5px;}
+.profile-rank{font-size:10px;color:var(--txt2);margin-top:1px;letter-spacing:1px;}
+.profile-placa{font-size:9px;color:var(--amb);letter-spacing:1px;margin-top:2px;}
+
+/* ESTADO */
+.status-selector{display:flex;flex-direction:column;gap:3px;margin-left:14px;}
+.status-label-top{font-size:9px;color:var(--txt2);letter-spacing:1px;}
+.status-pill{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;cursor:pointer;border:1px solid transparent;font-size:10px;font-weight:700;letter-spacing:1px;transition:all .15s;}
+.status-pill.disponible{background:#0a2010;color:var(--grn);border-color:#1a4020;}
+.status-pill.servicio{background:#0a1a30;color:var(--acc2);border-color:#1a3060;}
+.status-pill.fuera{background:#2a1010;color:var(--red);border-color:#4a2020;}
+.status-dot{width:6px;height:6px;border-radius:50%;}
+.status-dot.disponible{background:var(--grn);}
+.status-dot.servicio{background:var(--acc2);animation:pulse 1.2s infinite;}
+.status-dot.fuera{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* RELOJ / SERVICIO */
+.clock-block{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.clock-time{font-size:18px;font-weight:700;color:var(--acc2);letter-spacing:2px;}
+.clock-date{font-size:9px;color:var(--txt2);}
+.service-timer{font-size:9px;color:var(--amb);letter-spacing:1px;margin-top:1px;}
+
+/* UNIDAD / PLACA block */
+.unit-block{display:flex;flex-direction:column;gap:2px;}
+.unit-label{font-size:9px;color:var(--txt2);letter-spacing:1px;}
+.unit-value{font-size:12px;font-weight:700;color:var(--txt);}
+.placa-value{font-size:11px;color:var(--amb);letter-spacing:2px;}
+
+/* STATUS dropdown menu */
+.status-menu{background:var(--bg3);border:1px solid var(--brd2);border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:4px;margin-left:8px;}
+.status-opt{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;border:1px solid transparent;transition:all .15s;}
+.status-opt:hover{background:var(--bg4);}
+.status-opt.disponible{color:var(--grn);}
+.status-opt.servicio{color:var(--acc2);}
+.status-opt.fuera{color:var(--red);}
+
+/* BODY */
+.main-body{display:flex;flex:1;}
+.sidebar{width:195px;background:var(--bg2);border-right:1px solid var(--brd2);padding:10px 0;flex-shrink:0;}
+.sidebar-label{font-size:9px;color:var(--txt2);letter-spacing:2px;padding:8px 14px 4px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12px;color:var(--txt2);border-left:3px solid transparent;transition:all .15s;}
+.nav-item:hover{background:var(--bg3);color:var(--txt);}
+.nav-item.active{background:var(--bg3);color:var(--acc2);border-left-color:var(--acc);}
+.nav-item.secret-nav{color:#7040aa;}
+.nav-item.secret-nav.active{color:var(--sec);border-left-color:var(--sec);}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 1.2s infinite;margin-left:auto;}
+.logout-btn{margin:10px 12px 0;width:calc(100% - 24px);background:transparent;border:1px solid var(--brd2);color:var(--txt2);padding:7px;border-radius:6px;font-family:'Courier New',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* CONTENT */
+.content{flex:1;padding:16px;overflow-y:auto;background:var(--bg);}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--brd);}
+.section-header h2{font-size:13px;letter-spacing:2px;text-transform:uppercase;}
+.section-tag{font-size:9px;padding:3px 8px;border-radius:3px;letter-spacing:1px;font-weight:700;}
+.tag-police{background:#0a2050;color:var(--acc2);border:1px solid var(--acc);}
+.tag-ems{background:#300020;color:#ff88aa;border:1px solid var(--ems-c);}
+.tag-army{background:#0a2010;color:#88cc88;border:1px solid var(--arm);}
+.tag-secret{background:#1a0030;color:#cc88ff;border:1px solid var(--sec);}
+
+/* PROFILE CARD full */
+.profile-card-full{background:var(--bg2);border:1px solid var(--brd2);border-radius:10px;padding:20px;margin-bottom:14px;}
+.pf-top{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--brd);}
+.pf-avatar-big{width:64px;height:64px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0;border:2px solid var(--brd2);}
+.pf-avatar-big.police{background:#0a2050;color:var(--acc2);border-color:var(--acc);}
+.pf-avatar-big.ems{background:#300020;color:var(--ems-c);border-color:var(--ems-c);}
+.pf-avatar-big.army{background:#0a2010;color:var(--arm);border-color:var(--arm);}
+.pf-avatar-big.secreto{background:#1a0030;color:var(--sec);border-color:var(--sec);}
+.pf-name{font-size:18px;font-weight:700;color:var(--txt);}
+.pf-rank{font-size:12px;color:var(--txt2);margin-top:3px;letter-spacing:1px;}
+.pf-unit{font-size:11px;color:var(--acc2);margin-top:4px;}
+.pf-rows{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pf-row{background:var(--bg3);border-radius:7px;padding:12px 14px;}
+.pf-row-label{font-size:9px;color:var(--txt2);letter-spacing:1px;margin-bottom:5px;text-transform:uppercase;}
+.pf-row-value{font-size:14px;font-weight:700;color:var(--txt);}
+.pf-row-value.amb{color:var(--amb);}
+.pf-row-value.grn{color:var(--grn);}
+.pf-row-value.acc{color:var(--acc2);}
+.pf-row-value.red{color:var(--red);}
+
+/* MISC */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+.info-card{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:14px;cursor:pointer;transition:all .2s;}
+.info-card:hover{border-color:var(--acc);transform:translateY(-1px);}
+.info-card .card-icon{font-size:20px;margin-bottom:7px;}
+.info-card .card-title{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--txt);}
+.info-card .card-count{font-size:20px;font-weight:700;color:var(--acc2);margin-top:3px;}
+.form-section{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:14px;margin-bottom:12px;}
+.form-section h3{font-size:11px;letter-spacing:1px;color:var(--acc2);margin-bottom:10px;text-transform:uppercase;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-group label{font-size:10px;color:var(--txt2);letter-spacing:1px;display:block;margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg3);border:1px solid var(--brd2);border-radius:4px;color:var(--txt);padding:8px 10px;font-family:'Courier New',monospace;font-size:12px;outline:none;}
+.form-group textarea{resize:vertical;min-height:70px;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--acc);}
+.btn-submit{background:var(--acc);border:none;border-radius:6px;color:#fff;padding:9px 18px;font-family:'Courier New',monospace;font-size:12px;cursor:pointer;font-weight:700;letter-spacing:1px;}
+.btn-submit:hover{opacity:.85;}
+.btn-danger{background:var(--red);}
+.notice-list{display:flex;flex-direction:column;gap:8px;}
+.notice-item{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:12px 14px;}
+.notice-item .n-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.notice-item .n-title{font-size:13px;font-weight:700;}
+.notice-item .n-time{font-size:10px;color:var(--txt2);}
+.notice-item .n-body{font-size:12px;color:var(--txt2);line-height:1.6;}
+.notice-item .n-author{font-size:10px;color:var(--acc);margin-top:5px;}
+.notice-urgent{border-color:var(--red);}
+.notice-urgent .n-title{color:var(--red);}
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table th{text-align:left;padding:8px 10px;font-size:9px;color:var(--txt2);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--brd2);}
+.data-table td{padding:8px 10px;border-bottom:1px solid var(--brd);color:var(--txt);}
+.data-table tr:hover td{background:var(--bg2);}
+.status-badge{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px;}
+.status-active{background:#0a3020;color:var(--grn);border:1px solid #1a6040;}
+.status-wanted{background:#300a10;color:var(--red);border:1px solid #601020;}
+.status-detained{background:#302000;color:var(--amb);border:1px solid #604010;}
+.wanted-card{background:var(--bg2);border:1px solid var(--red);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.wanted-avatar{width:44px;height:44px;border-radius:6px;background:var(--bg3);border:1px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.wanted-info .w-name{font-size:13px;font-weight:700;color:var(--red);}
+.wanted-info .w-crime{font-size:11px;color:var(--txt2);margin-top:2px;}
+.wanted-info .w-level{font-size:10px;color:var(--amb);margin-top:4px;letter-spacing:1px;}
+.secret-panel{background:#0f0020;border:1px solid var(--sec);border-radius:8px;padding:14px;margin-bottom:12px;}
+.secret-panel .sp-header{color:var(--sec);font-size:11px;letter-spacing:2px;font-weight:700;margin-bottom:10px;text-transform:uppercase;}
+.secret-panel .sp-item{padding:10px;background:#1a0030;border-radius:6px;margin-bottom:6px;}
+.secret-panel .sp-item .sp-title{font-size:12px;color:#cc88ff;font-weight:700;}
+.secret-panel .sp-item .sp-text{font-size:11px;color:#8860aa;margin-top:3px;line-height:1.5;}
+.classified-banner{background:#300;border:1px solid var(--red);border-radius:4px;color:var(--red);font-size:10px;letter-spacing:3px;text-align:center;padding:4px;margin-bottom:10px;font-weight:700;}
+
+/* RADIO */
+.radio-unit{background:var(--bg2);border-radius:10px;border:1px solid var(--brd2);overflow:hidden;margin-bottom:12px;}
+.radio-unit.police{border-top:3px solid var(--acc);}
+.radio-unit.ems{border-top:3px solid var(--ems-c);}
+.radio-unit.army{border-top:3px solid var(--arm);}
+.radio-unit.secret{border-top:3px solid var(--sec);}
+.r-unit-header{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--bg3);border-bottom:1px solid var(--brd);}
+.r-unit-name{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.r-unit-name.police{color:var(--acc2);}
+.r-unit-name.ems{color:var(--ems-c);}
+.r-unit-name.army{color:var(--arm);}
+.r-unit-name.secret{color:var(--sec);}
+.freq-display{font-size:12px;font-weight:700;color:var(--amb);letter-spacing:1px;}
+.signal-bar{display:flex;align-items:flex-end;gap:2px;height:14px;}
+.signal-bar span{width:3px;background:var(--brd2);border-radius:1px;}
+.signal-bar.active span:nth-child(1){background:var(--grn);height:4px;}
+.signal-bar.active span:nth-child(2){background:var(--grn);height:7px;}
+.signal-bar.active span:nth-child(3){background:var(--grn);height:10px;}
+.signal-bar.active span:nth-child(4){background:var(--amb);height:12px;}
+.signal-bar.active span:nth-child(5){background:var(--red);height:14px;}
+.signal-bar span:nth-child(1){height:4px;}
+.signal-bar span:nth-child(2){height:7px;}
+.signal-bar span:nth-child(3){height:10px;}
+.signal-bar span:nth-child(4){height:12px;}
+.signal-bar span:nth-child(5){height:14px;}
+.onair-badge{font-size:9px;font-weight:700;letter-spacing:2px;padding:2px 7px;border-radius:3px;background:#0a2010;color:var(--grn);border:1px solid #1a4020;animation:pulse 1.2s infinite;}
+.muted-badge{font-size:9px;font-weight:700;letter-spacing:2px;padding:2px 7px;border-radius:3px;background:#2a1010;color:var(--red);border:1px solid #4a2020;}
+.r-unit-body{display:flex;min-height:200px;}
+.channels-col{width:175px;flex-shrink:0;border-right:1px solid var(--brd);padding:7px;}
+.channels-label{font-size:9px;color:var(--txt2);letter-spacing:2px;padding:3px 5px 6px;text-transform:uppercase;}
+.ch-item{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:5px;cursor:pointer;border:1px solid transparent;margin-bottom:3px;transition:all .15s;}
+.ch-item:hover{background:var(--bg4);border-color:var(--brd2);}
+.ch-item.active-ch.police{background:var(--bg4);border-color:var(--acc);}
+.ch-item.active-ch.ems{background:var(--bg4);border-color:var(--ems-c);}
+.ch-item.active-ch.army{background:var(--bg4);border-color:var(--arm);}
+.ch-item.active-ch.secret{background:var(--bg4);border-color:var(--sec);}
+.ch-dot{width:7px;height:7px;border-radius:50%;background:var(--brd2);flex-shrink:0;}
+.ch-item.active-ch.police .ch-dot{background:var(--acc2);}
+.ch-item.active-ch.ems .ch-dot{background:var(--ems-c);}
+.ch-item.active-ch.army .ch-dot{background:var(--arm);}
+.ch-item.active-ch.secret .ch-dot{background:var(--sec);}
+.ch-info{flex:1;min-width:0;}
+.ch-name{font-size:11px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;}
+.ch-sub{font-size:9px;color:var(--txt2);letter-spacing:.5px;}
+.ch-users{font-size:9px;color:var(--grn);flex-shrink:0;}
+.chat-col{flex:1;display:flex;flex-direction:column;padding:9px 11px;min-width:0;}
+.webhook-notice{font-size:10px;color:var(--txt2);padding:3px 7px;background:var(--bg3);border-radius:4px;border-left:2px solid var(--acc);margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.webhook-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);}
+.chat-ch-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--brd);}
+.chat-ch-name{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--txt);}
+.chat-ch-status{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--grn);}
+.online-dot{width:5px;height:5px;border-radius:50%;background:var(--grn);animation:pulse 1.2s infinite;}
+.messages-area{flex:1;overflow-y:auto;min-height:90px;max-height:120px;display:flex;flex-direction:column;gap:3px;margin-bottom:7px;}
+.msg{display:flex;gap:7px;align-items:flex-start;padding:2px 0;}
+.msg-avatar{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;}
+.msg-avatar.police{background:#0a2050;color:var(--acc2);}
+.msg-avatar.ems{background:#300020;color:var(--ems-c);}
+.msg-avatar.army{background:#0a2010;color:var(--arm);}
+.msg-avatar.secret{background:#1a0030;color:var(--sec);}
+.msg-avatar.sys{background:#1a2440;color:var(--txt2);}
+.msg-body{flex:1;min-width:0;}
+.msg-meta{display:flex;align-items:baseline;gap:5px;margin-bottom:1px;}
+.msg-author{font-size:10px;font-weight:700;}
+.msg-time{font-size:9px;color:var(--txt2);}
+.msg-text{font-size:10px;color:var(--txt2);line-height:1.5;word-break:break-word;}
+.msg-text.system{color:#4060aa;font-style:italic;}
+.r-input-row{display:flex;gap:5px;align-items:center;}
+.r-input-row input{flex:1;background:var(--bg3);border:1px solid var(--brd2);border-radius:5px;color:var(--txt);padding:7px 9px;font-family:'Courier New',monospace;font-size:11px;outline:none;min-width:0;}
+.r-input-row input:focus{border-color:var(--acc);}
+.ptt-btn{padding:7px 12px;border-radius:5px;border:none;font-family:'Courier New',monospace;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;flex-shrink:0;}
+.ptt-btn.police{background:var(--acc);color:#fff;}
+.ptt-btn.ems{background:var(--ems-c);color:#fff;}
+.ptt-btn.army{background:var(--arm);color:#fff;}
+.ptt-btn.secret{background:var(--sec);color:#fff;}
+.ptt-btn:hover{opacity:.85;}
+.mute-btn{background:var(--bg4);border:1px solid var(--brd2);border-radius:5px;color:var(--txt2);padding:7px 9px;font-size:12px;cursor:pointer;flex-shrink:0;}
+.mute-btn.muted{border-color:var(--red);color:var(--red);}
+</style>
+
+<h2 class="sr-only">PDA Policial completa con perfil de agente en barra superior</h2>
+<div id="app" style="position:relative;">
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-logo">🛡</div>
+  <div class="login-title">Sistema PDA</div>
+  <div class="login-sub">DISPOSITIVO DE ASISTENCIA PERSONAL · FUERZAS DE SEGURIDAD</div>
+  <div class="login-card">
+    <label>NOMBRE COMPLETO</label>
+    <input type="text" id="inputName" placeholder="Ej: Carlos Martínez" />
+    <label>RANGO</label>
+    <input type="text" id="inputRank" placeholder="Ej: Agente, Sargento, Inspector..." />
+    <label>UNIDAD</label>
+    <select id="inputRole">
+      <option value="">— Selecciona tu unidad —</option>
+      <option value="policia">🔵 POLICÍA</option>
+      <option value="ems">🔴 EMS — Emergencias Médicas</option>
+      <option value="ejercito">🟢 EJÉRCITO</option>
+      <option value="secreto">🟣 UNIDAD SECRETA</option>
+    </select>
+    <label>NÚMERO DE PLACA</label>
+    <input type="text" id="inputPlaca" placeholder="Ej: P-4471" />
+    <button class="btn-login" onclick="handleLogin()">⟶ IDENTIFICARSE</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- SECRET OVERLAY -->
+<div id="secretOverlay">
+  <div class="secret-box">
+    <h3>⬡ ACCESO CLASIFICADO ⬡</h3>
+    <p style="font-size:11px;color:#7040aa;margin-bottom:.8rem;">Introduce el código de acceso</p>
+    <input type="password" id="secretCodeInput" placeholder="● ● ● ● ●" maxlength="10" />
+    <button class="secret-btn" onclick="verifySecretCode()">VERIFICAR</button>
+    <button class="secret-cancel" onclick="closeSecretOverlay()">Cancelar</button>
+    <div style="color:var(--red);font-size:11px;margin-top:6px;" id="secretErr"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainInterface">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <!-- PERFIL -->
+    <div class="topbar-section" style="gap:10px;padding-left:14px;">
+      <div class="profile-avatar" id="topAvatar"></div>
+      <div class="profile-info">
+        <div class="profile-name" id="topName">—</div>
+        <div class="profile-rank" id="topRank">—</div>
+        <div class="profile-placa" id="topPlaca">—</div>
+      </div>
+    </div>
+
+    <!-- SEPARADOR | UNIDAD -->
+    <div class="topbar-section">
+      <div class="unit-block">
+        <div class="unit-label">UNIDAD</div>
+        <div class="unit-value" id="topUnit">—</div>
+      </div>
+    </div>
+
+    <!-- ESTADO -->
+    <div class="topbar-section" style="gap:0;">
+      <div class="status-menu">
+        <div class="status-label-top" style="padding:0 6px 2px;font-size:9px;color:var(--txt2);letter-spacing:1px;">ESTADO</div>
+        <div class="status-opt disponible" onclick="setStatus('disponible')"><span class="status-dot disponible"></span>DISPONIBLE</div>
+        <div class="status-opt servicio" onclick="setStatus('servicio')"><span class="status-dot servicio"></span>EN SERVICIO</div>
+        <div class="status-opt fuera" onclick="setStatus('fuera')"><span class="status-dot fuera"></span>FUERA SERVICIO</div>
+      </div>
+      <div id="currentStatusBadge" class="status-pill disponible" style="margin-left:10px;">
+        <span class="status-dot disponible"></span>DISPONIBLE
+      </div>
+    </div>
+
+    <!-- RELOJ + SERVICIO -->
+    <div class="topbar-section" style="border-right:none;margin-left:auto;border-left:1px solid var(--brd);">
+      <div class="clock-block">
+        <div class="clock-time" id="clockDisplay">00:00:00</div>
+        <div class="clock-date" id="dateDisplay">—</div>
+        <div class="service-timer">SERVICIO: <span id="serviceTimer">00:00:00</span></div>
+      </div>
+      <button class="logout-btn" style="margin:0 0 0 14px;width:auto;padding:6px 12px;" onclick="logout()">SALIR</button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="main-body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="contentArea"></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const SECRET_CODE = "1984";
+let cu = {name:'',rank:'',role:'',placa:'',status:'disponible',secretUnlocked:false};
+let serviceStart = null;
+let activeSection = '';
+let radioState = {};
+let radioLogs = {};
+
+const roleLabels = {policia:'POLICÍA',ems:'EMS',ejercito:'EJÉRCITO',secreto:'U. SECRETA'};
+const roleColors = {policia:'police',ems:'ems',ejercito:'army',secreto:'secreto'};
+
+const navConfig = {
+  policia:[
+    {id:'perfil',label:'Mi Perfil',icon:'👤',group:'General'},
+    {id:'avisos',label:'Avisos',icon:'📢',group:'General'},
+    {id:'radio',label:'Radio',icon:'📻',group:'General',dot:true},
+    {id:'informes',label:'Informes',icon:'📋',group:'Gestión'},
+    {id:'denuncias',label:'Denuncias',icon:'📝',group:'Gestión'},
+    {id:'buscados',label:'Busca y Captura',icon:'🎯',group:'Operativo'},
+    {id:'personas',label:'Registro Personas',icon:'👤',group:'Operativo'},
+    {id:'vehiculos',label:'Registro Vehículos',icon:'🚗',group:'Operativo'},
+  ],
+  ems:[
+    {id:'perfil',label:'Mi Perfil',icon:'👤',group:'General'},
+    {id:'avisos',label:'Avisos',icon:'📢',group:'General'},
+    {id:'radio',label:'Radio EMS',icon:'📻',group:'General',dot:true},
+    {id:'informes',label:'Informes Médicos',icon:'📋',group:'Gestión'},
+    {id:'personas',label:'Registro Pacientes',icon:'👤',group:'Operativo'},
+  ],
+  ejercito:[
+    {id:'perfil',label:'Mi Perfil',icon:'👤',group:'General'},
+    {id:'avisos',label:'Avisos',icon:'📢',group:'General'},
+    {id:'radio',label:'Radio Ejército',icon:'📻',group:'General',dot:true},
+    {id:'informes',label:'Informes Tácticos',icon:'📋',group:'Gestión'},
+    {id:'buscados',label:'Objetivos',icon:'🎯',group:'Operativo'},
+    {id:'vehiculos',label:'Registro Vehículos',icon:'🚗',group:'Operativo'},
+    {id:'personas',label:'Registro Personal',icon:'👤',group:'Operativo'},
+  ],
+  secreto:[
+    {id:'perfil',label:'Mi Perfil',icon:'👤',group:'General'},
+    {id:'avisos',label:'Avisos',icon:'📢',group:'General'},
+    {id:'radio',label:'Radio Policía',icon:'📻',group:'Acceso Policial',dot:true},
+    {id:'informes',label:'Informes',icon:'📋',group:'Acceso Policial'},
+    {id:'denuncias',label:'Denuncias',icon:'📝',group:'Acceso Policial'},
+    {id:'buscados',label:'Busca y Captura',icon:'🎯',group:'Acceso Policial'},
+    {id:'personas',label:'Registro Personas',icon:'👤',group:'Acceso Policial'},
+    {id:'vehiculos',label:'Registro Vehículos',icon:'🚗',group:'Acceso Policial'},
+    {id:'secreto_ops',label:'⬡ Operaciones',icon:'🔐',group:'Unidad Secreta',secret:true},
+    {id:'secreto_misiones',label:'⬡ Misiones',icon:'🗺',group:'Unidad Secreta',secret:true},
+    {id:'secreto_radio',label:'⬡ Radio Secreta',icon:'📡',group:'Unidad Secreta',secret:true,dot:true},
+    {id:'secreto_informes',label:'⬡ Informes Clasif.',icon:'🗂',group:'Unidad Secreta',secret:true},
+  ]
+};
+
+const RADIOS_DEF = {
+  policia:{id:'police',label:'Policía Nacional',cls:'police',freq:'462.550',
+    channels:[
+      {id:'p_h50',name:'H-50',sub:'Canal general',users:6},
+      {id:'p_a10',name:'ADAM-10',sub:'Patrulla Alpha',users:3},
+      {id:'p_a20',name:'ADAM-20',sub:'Patrulla Bravo',users:2},
+      {id:'p_a30',name:'ADAM-30',sub:'Patrulla Charlie',users:4},
+      {id:'p_a40',name:'ADAM-40',sub:'Patrulla Delta',users:1},
+      {id:'p_tac1',name:'TÁCTICO 1',sub:'Operaciones tác.',users:3},
+      {id:'p_tac2',name:'TÁCTICO 2',sub:'Operaciones tác.',users:2},
+    ]},
+  ems:{id:'ems',label:'Emergencias Médicas',cls:'ems',freq:'155.340',
+    channels:[
+      {id:'e1',name:'Despacho Central',sub:'Canal principal',users:5},
+      {id:'e2',name:'Trauma / UCI',sub:'Urgencias',users:2},
+      {id:'e3',name:'Transporte',sub:'Ambulancias',users:1},
+    ]},
+  ejercito:{id:'army',label:'Ejército',cls:'army',freq:'138.225',
+    channels:[
+      {id:'a1',name:'Mando Central',sub:'Alto mando',users:6},
+      {id:'a2',name:'Pelotón Alpha',sub:'Unidad de campo',users:3},
+      {id:'a3',name:'Logística',sub:'Suministros',users:2},
+    ]},
+  secreto:{id:'secret',label:'Unidad Secreta [CIFRADA]',cls:'secret',freq:'??? ???',
+    channels:[
+      {id:'s1',name:'[CIFRADO] Alfa',sub:'Mando operativo',users:2},
+      {id:'s2',name:'[CIFRADO] Ops',sub:'Operaciones',users:1},
+      {id:'s3',name:'[CIFRADO] Exfil',sub:'Extracción',users:1},
+    ]}
+};
+
+function initials(name){return name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+
+function handleLogin(){
+  const name=document.getElementById('inputName').value.trim();
+  const rank=document.getElementById('inputRank').value.trim();
+  const role=document.getElementById('inputRole').value;
+  const placa=document.getElementById('inputPlaca').value.trim();
+  if(!name){document.getElementById('loginErr').textContent='Introduce tu nombre.';return;}
+  if(!rank){document.getElementById('loginErr').textContent='Introduce tu rango.';return;}
+  if(!role){document.getElementById('loginErr').textContent='Selecciona tu unidad.';return;}
+  if(!placa){document.getElementById('loginErr').textContent='Introduce tu número de placa.';return;}
+  cu={name,rank,role,placa,status:'servicio',secretUnlocked:false};
+  serviceStart=Date.now();
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainInterface').classList.add('active');
+  updateTopbar();
+  buildSidebar();
+  startClock();
+  navigateTo('perfil');
+}
+
+function updateTopbar(){
+  const cls=roleColors[cu.role]||'police';
+  const av=document.getElementById('topAvatar');
+  av.className='profile-avatar '+cls;
+  av.textContent=initials(cu.name);
+  document.getElementById('topName').textContent=cu.name.toUpperCase();
+  document.getElementById('topRank').textContent=cu.rank.toUpperCase();
+  document.getElementById('topPlaca').textContent='PLACA: '+cu.placa.toUpperCase();
+  document.getElementById('topUnit').textContent=roleLabels[cu.role]||cu.role.toUpperCase();
+  setStatus(cu.status);
+}
+
+function setStatus(s){
+  cu.status=s;
+  const labels={disponible:'DISPONIBLE',servicio:'EN SERVICIO',fuera:'FUERA SERVICIO'};
+  const badge=document.getElementById('currentStatusBadge');
+  badge.className='status-pill '+s;
+  badge.innerHTML=`<span class="status-dot ${s}"></span>${labels[s]}`;
+}
+
+function logout(){
+  cu={name:'',rank:'',role:'',placa:'',status:'disponible',secretUnlocked:false};
+  serviceStart=null;
+  document.getElementById('mainInterface').classList.remove('active');
+  document.getElementById('loginScreen').style.display='flex';
+  ['inputName','inputRank','inputPlaca'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('inputRole').value='';
+  document.getElementById('loginErr').textContent='';
+}
+
+function buildSidebar(){
+  const nav=navConfig[cu.role]||[];
+  let html='';let lastGroup=null;
+  nav.forEach(item=>{
+    if(item.group!==lastGroup){
+      if(lastGroup!==null)html+='</div>';
+      html+=`<div class="sidebar-section"><div class="sidebar-label">${item.group}</div>`;
+      lastGroup=item.group;
+    }
+    const sc=item.secret?' secret-nav':'';
+    const dot=item.dot?'<span class="nav-dot"></span>':'';
+    html+=`<div class="nav-item${sc}" id="nav-${item.id}" onclick="handleNavClick('${item.id}',${item.secret||false})">${item.icon} <span>${item.label}</span>${dot}</div>`;
+  });
+  if(lastGroup!==null)html+='</div>';
+  html+=`<button class="logout-btn" onclick="logout()">⟵ CERRAR SESIÓN</button>`;
+  document.getElementById('sidebar').innerHTML=html;
+}
+
+function handleNavClick(id,isSecret){
+  if(isSecret&&!cu.secretUnlocked){
+    document.getElementById('secretOverlay').style.display='flex';
+    document.getElementById('secretCodeInput').value='';
+    document.getElementById('secretErr').textContent='';
+    document.getElementById('secretCodeInput').dataset.target=id;
+    return;
+  }
+  navigateTo(id);
+}
+function verifySecretCode(){
+  if(document.getElementById('secretCodeInput').value===SECRET_CODE){
+    cu.secretUnlocked=true;
+    closeSecretOverlay();
+    const t=document.getElementById('secretCodeInput').dataset.target;
+    if(t)navigateTo(t);
+  }else{
+    document.getElementById('secretErr').textContent='✗ Código incorrecto.';
+    document.getElementById('secretCodeInput').value='';
+  }
+}
+function closeSecretOverlay(){document.getElementById('secretOverlay').style.display='none';}
+
+function navigateTo(id){
+  activeSection=id;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('nav-'+id);
+  if(el)el.classList.add('active');
+  document.getElementById('contentArea').innerHTML=renderSection(id);
+  document.querySelectorAll('.messages-area').forEach(el=>el.scrollTop=el.scrollHeight);
+}
+
+function renderSection(id){
+  if(id==='perfil') return renderPerfil();
+  if(id==='avisos') return renderAvisos();
+  if(id==='informes') return renderInformes();
+  if(id==='denuncias') return renderDenuncias();
+  if(id==='buscados') return renderBuscados();
+  if(id==='personas') return renderPersonas();
+  if(id==='vehiculos') return renderVehiculos();
+  if(id==='radio'||id==='secreto_radio') return renderRadioPanel(id);
+  if(id==='secreto_ops') return renderSecretoOps();
+  if(id==='secreto_misiones') return renderSecretoMisiones();
+  if(id==='secreto_informes') return renderSecretoInformes();
+  return '<p style="color:var(--txt2);padding:20px;">Sección en desarrollo.</p>';
+}
+
+function secHdr(title,tag,tagCls){
+  return `<div class="section-header"><h2>${title}</h2><span class="section-tag ${tagCls}">${tag}</span></div>`;
+}
+function tagCls(role){return{policia:'tag-police',ems:'tag-ems',ejercito:'tag-army',secreto:'tag-secret'}[role]||'tag-police';}
+
+function renderPerfil(){
+  const cls=roleColors[cu.role]||'police';
+  const statusLabels={disponible:'DISPONIBLE',servicio:'EN SERVICIO',fuera:'FUERA DE SERVICIO'};
+  const statusColors={disponible:'grn',servicio:'acc',fuera:'red'};
+  const sc=statusColors[cu.status]||'grn';
+  return `${secHdr('Mi Perfil','AGENTE',tagCls(cu.role))}
+  <div class="profile-card-full">
+    <div class="pf-top">
+      <div class="pf-avatar-big ${cls}">${initials(cu.name)}</div>
+      <div>
+        <div class="pf-name">${cu.name.toUpperCase()}</div>
+        <div class="pf-rank">${cu.rank.toUpperCase()}</div>
+        <div class="pf-unit">${roleLabels[cu.role]||cu.role}</div>
+      </div>
+    </div>
+    <div class="pf-rows">
+      <div class="pf-row">
+        <div class="pf-row-label">NÚMERO DE PLACA</div>
+        <div class="pf-row-value amb">${cu.placa.toUpperCase()}</div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-row-label">ESTADO ACTUAL</div>
+        <div class="pf-row-value ${sc}">${statusLabels[cu.status]||'—'}</div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-row-label">HORAS DE SERVICIO</div>
+        <div class="pf-row-value grn" id="pfServiceTimer">00:00:00</div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-row-label">UNIDAD</div>
+        <div class="pf-row-value acc">${roleLabels[cu.role]||'—'}</div>
+      </div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h3>Cambiar estado</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-submit" style="background:#0a3020;color:var(--grn);border:1px solid #1a6040;" onclick="setStatus('disponible');navigateTo('perfil')">● DISPONIBLE</button>
+      <button class="btn-submit" style="background:#0a1a30;color:var(--acc2);border:1px solid #1a3060;" onclick="setStatus('servicio');navigateTo('perfil')">● EN SERVICIO</button>
+      <button class="btn-submit" style="background:#2a1010;color:var(--red);border:1px solid #4a2020;" onclick="setStatus('fuera');navigateTo('perfil')">● FUERA DE SERVICIO</button>
+    </div>
+  </div>`;
+}
+
+function renderAvisos(){
+  let h=secHdr('Tablón de Avisos',roleLabels[cu.role],tagCls(cu.role));
+  h+=`<div style="font-size:11px;color:var(--txt2);margin-bottom:12px;padding:7px 11px;background:var(--bg2);border-radius:6px;border-left:3px solid var(--acc);">🔗 Canal vinculado: <b style="color:var(--acc2);">Discord #avisos-oficiales</b></div>`;
+  h+=`<div class="notice-list">`;
+  [{title:'⚠️ ALERTA OPERATIVA',body:'Protocolo Delta activo en sector Norte. Todas las unidades al puesto de mando.',time:'14:32',author:'JEFATURA CENTRAL',urgent:true},
+   {title:'Reunión de briefing',body:'Sesión obligatoria para mandos a las 09:00. Sala de operaciones.',time:'08:15',author:'Comisario García'},
+   {title:'Mantenimiento sistema',body:'Servidor en mantenimiento el sábado de 02:00 a 04:00.',time:'Ayer',author:'Soporte TIC'}
+  ].forEach(n=>{
+    h+=`<div class="notice-item${n.urgent?' notice-urgent':''}">
+      <div class="n-header"><span class="n-title">${n.title}</span><span class="n-time">${n.time}</span></div>
+      <div class="n-body">${n.body}</div>
+      <div class="n-author">— ${n.author}</div>
+    </div>`;
+  });
+  h+=`</div><div class="form-section" style="margin-top:14px;"><h3>Publicar Aviso</h3>
+    <div class="form-group" style="margin-bottom:8px;"><label>TÍTULO</label><input type="text" placeholder="Título del aviso..." /></div>
+    <div class="form-group" style="margin-bottom:8px;"><label>MENSAJE</label><textarea placeholder="Contenido..."></textarea></div>
+    <button class="btn-submit" onclick="alert('✓ Aviso publicado en Discord y PDA')">PUBLICAR</button>
+  </div>`;
+  return h;
+}
+
+function renderInformes(){
+  return `${secHdr('Informes',roleLabels[cu.role],tagCls(cu.role))}
+  <div class="card-grid">
+    <div class="info-card"><div class="card-icon">📋</div><div class="card-title">ABIERTOS</div><div class="card-count" style="color:var(--amb)">7</div></div>
+    <div class="info-card"><div class="card-icon">✅</div><div class="card-title">CERRADOS</div><div class="card-count" style="color:var(--grn)">43</div></div>
+    <div class="info-card"><div class="card-icon">⏳</div><div class="card-title">PENDIENTES</div><div class="card-count" style="color:var(--red)">3</div></div>
+  </div>
+  <div class="form-section"><h3>Nuevo Informe</h3>
+    <div class="form-row">
+      <div class="form-group"><label>EXPEDIENTE</label><input type="text" placeholder="EXP-2026-XXXX" /></div>
+      <div class="form-group"><label>FECHA / HORA</label><input type="datetime-local" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>AGENTE</label><input type="text" value="${cu.name}" /></div>
+      <div class="form-group"><label>PRIORIDAD</label><select><option>Normal</option><option>Alta</option><option>Urgente</option></select></div>
+    </div>
+    <div class="form-group" style="margin-bottom:8px;"><label>DESCRIPCIÓN</label><textarea style="min-height:90px;" placeholder="Describe el incidente..."></textarea></div>
+    <button class="btn-submit" onclick="alert('✓ Informe registrado')">REGISTRAR</button>
+  </div>`;
+}
+
+function renderDenuncias(){
+  return `${secHdr('Denuncias',roleLabels[cu.role],tagCls(cu.role))}
+  <div class="form-section"><h3>Registrar Denuncia</h3>
+    <div class="form-row">
+      <div class="form-group"><label>DENUNCIANTE</label><input type="text" placeholder="Nombre completo..." /></div>
+      <div class="form-group"><label>DNI</label><input type="text" placeholder="00000000X" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>TIPO</label><select><option>Robo</option><option>Agresión</option><option>Amenazas</option><option>Accidente</option><option>Otro</option></select></div>
+      <div class="form-group"><label>LUGAR</label><input type="text" placeholder="Dirección..." /></div>
+    </div>
+    <div class="form-group" style="margin-bottom:8px;"><label>RELATO</label><textarea style="min-height:90px;" placeholder="Descripción detallada..."></textarea></div>
+    <button class="btn-submit" onclick="alert('✓ Denuncia registrada con número #2026-0847')">REGISTRAR</button>
+  </div>`;
+}
+
+function renderBuscados(){
+  let h=secHdr('Busca y Captura',roleLabels[cu.role],tagCls(cu.role));
+  [{name:'DESCONOCIDO "El Sombra"',crime:'Tráfico de armas, evasión policial × 3',level:'⚠ PELIGROSO · ACERCARSE CON PRECAUCIÓN',icon:'😤'},
+   {name:'Roberto Suárez Vidal',crime:'Robo a mano armada, lesiones graves',level:'⚠ BUSCADO ACTIVO',icon:'👤'},
+   {name:'GRUPO "Los Cuervos"',crime:'Crimen organizado, extorsión',level:'⚠⚠ EXTREMADAMENTE PELIGROSO',icon:'⚫'}
+  ].forEach(w=>{
+    h+=`<div class="wanted-card">
+      <div class="wanted-avatar">${w.icon}</div>
+      <div class="wanted-info">
+        <div class="w-name">${w.name}</div>
+        <div class="w-crime">${w.crime}</div>
+        <div class="w-level">${w.level}</div>
+      </div>
+    </div>`;
+  });
+  return h;
+}
+
+function renderPersonas(){
+  let h=secHdr('Registro de Personas',roleLabels[cu.role],tagCls(cu.role));
+  h+=`<table class="data-table">
+    <tr><th>NOMBRE</th><th>DNI</th><th>ESTADO</th><th>DETALLE</th></tr>
+    <tr><td>Ana López Ruiz</td><td>12345678A</td><td><span class="status-badge status-active">LIMPIO</span></td><td style="color:var(--txt2)">Sin antecedentes</td></tr>
+    <tr><td>Miguel Vega Santos</td><td>87654321B</td><td><span class="status-badge status-wanted">BUSCADO</span></td><td style="color:var(--txt2)">Antecedentes por robo</td></tr>
+    <tr><td>Carmen Díaz Ramos</td><td>11223344C</td><td><span class="status-badge status-detained">DETENIDO</span></td><td style="color:var(--txt2)">Detenida 12/05/2026</td></tr>
+  </table>`;
+  return h;
+}
+
+function renderVehiculos(){
+  let h=secHdr('Registro de Vehículos',roleLabels[cu.role],tagCls(cu.role));
+  h+=`<table class="data-table">
+    <tr><th>MATRÍCULA</th><th>VEHÍCULO</th><th>COLOR</th><th>PROPIETARIO</th><th>ESTADO</th></tr>
+    <tr><td style="font-weight:700;color:var(--acc2)">ABC 1234</td><td>BMW Serie 3</td><td>Negro</td><td>Miguel Vega Santos</td><td><span class="status-badge status-wanted">BUSCADO</span></td></tr>
+    <tr><td style="font-weight:700;color:var(--acc2)">XYZ 9876</td><td>Seat León</td><td>Blanco</td><td>Ana López Ruiz</td><td><span class="status-badge status-active">LIMPIO</span></td></tr>
+    <tr><td style="font-weight:700;color:var(--acc2)">QWE 5555</td><td>Mercedes Sprinter</td><td>Gris</td><td>Desconocido</td><td><span class="status-badge status-detained">RETENIDO</span></td></tr>
+  </table>`;
+  return h;
+}
+
+function renderSecretoOps(){
+  return `<div class="section-header"><h2 style="color:var(--sec)">⬡ Operaciones Clasificadas</h2><span class="section-tag tag-secret">CLASIFICADO</span></div>
+  <div class="classified-banner">⬡ ACCESO NIVEL 5 — OJOS AUTORIZADOS ÚNICAMENTE ⬡</div>
+  <div class="secret-panel">
+    <div class="sp-header">Operaciones en Curso</div>
+    <div class="sp-item"><div class="sp-title">OP. SOMBRA ROJA — En curso</div><div class="sp-text">Vigilancia encubierta sobre "Los Cuervos". Fase 3/5. Fecha límite: 20/05/2026.</div></div>
+    <div class="sp-item"><div class="sp-title">OP. ESPEJO — Stand-by</div><div class="sp-text">Infiltración en red de tráfico de información. Código de emergencia: AZUL-7.</div></div>
+    <div class="sp-item" style="border:1px solid var(--red)"><div class="sp-title" style="color:var(--red)">OP. MERCURIO — CRÍTICO</div><div class="sp-text">Exfiltración de activo comprometido. Ventana: 24h. Requiere autorización nivel 5+.</div></div>
+  </div>`;
+}
+
+function renderSecretoMisiones(){
+  return `<div class="section-header"><h2 style="color:var(--sec)">⬡ Misiones Activas</h2><span class="section-tag tag-secret">CLASIFICADO</span></div>
+  <div class="classified-banner">⬡ INFORMACIÓN CLASIFICADA NIVEL MÁXIMO ⬡</div>
+  <div class="secret-panel">
+    <div class="sp-header">Lista de Misiones</div>
+    <div class="sp-item"><div class="sp-title">[M-044] Neutralizar informante comprometido</div><div class="sp-text">Estado: En curso · Agente K-7 · ALTO riesgo</div></div>
+    <div class="sp-item"><div class="sp-title">[M-041] Vigilancia zona portuaria norte</div><div class="sp-text">Estado: En curso · Equipo Delta · MEDIO riesgo</div></div>
+    <div class="sp-item" style="border:1px solid var(--red)"><div class="sp-title" style="color:var(--red)">[M-038] Recuperar documentación robada — CRÍTICO</div><div class="sp-text">Estado: Urgente · Agente Solo · CRÍTICO</div></div>
+  </div>`;
+}
+
+function renderSecretoInformes(){
+  return `<div class="section-header"><h2 style="color:var(--sec)">⬡ Informes Clasificados</h2><span class="section-tag tag-secret">CLASIFICADO</span></div>
+  <div class="classified-banner">⬡ PROHIBIDA LA DISTRIBUCIÓN ⬡</div>
+  <div class="form-section" style="background:#0f0020;border-color:var(--sec)">
+    <h3 style="color:var(--sec)">Nuevo Informe Clasificado</h3>
+    <div class="form-row">
+      <div class="form-group"><label>REFERENCIA</label><input type="text" placeholder="REF-SEC-2026-XXX" /></div>
+      <div class="form-group"><label>CLASIFICACIÓN</label><select><option>Confidencial</option><option>Secreto</option><option>Alto Secreto</option></select></div>
+    </div>
+    <div class="form-group" style="margin-bottom:8px;"><label>CONTENIDO</label><textarea style="min-height:100px;" placeholder="Redactar informe..."></textarea></div>
+    <button class="btn-submit" style="background:var(--sec)" onclick="alert('✓ Informe cifrado y registrado')">REGISTRAR CLASIFICADO</button>
+  </div>`;
+}
+
+function getShortTime(){return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});}
+function roleColor(role){return{police:'#00d4ff',ems:'#ff4466',army:'#4caf50',secret:'#9b30ff',sys:'#4060aa'}[role]||'#c8d8ff';}
+
+function renderMsgs(msgs){
+  return (msgs||[]).slice().reverse().map(m=>`
+    <div class="msg">
+      <div class="msg-avatar ${m.role}">${m.avatar}</div>
+      <div class="msg-body">
+        <div class="msg-meta"><span class="msg-author" style="color:${roleColor(m.role)}">${m.author}</span><span class="msg-time">${m.time}</span></div>
+        <div class="msg-text${m.system?' system':''}">${m.text}</div>
+      </div>
+    </div>`).join('');
+}
+
+const SEED_MSGS = {
+  p_h50:[
+    {author:'SISTEMA',avatar:'SYS',role:'sys',text:'H-50 activo — Canal general.',time:'14:00',system:true},
+    {author:'Control',avatar:'CTL',role:'police',text:'Todas las unidades, confirmar posición.',time:'14:18'},
+    {author:'ADAM-10',avatar:'A10',role:'police',text:'ADAM-10 en posición, sector norte.',time:'14:19'},
+  ],
+  p_a10:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'ADAM-10 operativo.',time:'14:00',system:true}],
+  p_a20:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'ADAM-20 en espera.',time:'14:00',system:true}],
+  p_a30:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'ADAM-30 en espera.',time:'14:00',system:true},{author:'ADAM-30',avatar:'A30',role:'police',text:'Unidad en ruta al sector este.',time:'14:22'}],
+  p_a40:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'ADAM-40 en espera.',time:'14:00',system:true}],
+  p_tac1:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'TÁCTICO 1 — uso exclusivo operaciones.',time:'14:00',system:true},{author:'Control',avatar:'CTL',role:'police',text:'Unidades tácticas, preparen acceso sur.',time:'14:25'}],
+  p_tac2:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'TÁCTICO 2 en standby.',time:'14:00',system:true}],
+  e1:[{author:'Despacho',avatar:'DES',role:'ems',text:'Ambulancia 3 en ruta norte.',time:'14:24'}],
+  e2:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'Trauma/UCI en espera.',time:'14:00',system:true}],
+  e3:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'Transporte en espera.',time:'14:00',system:true}],
+  a1:[{author:'Coronel-R',avatar:'CR',role:'army',text:'Pelotones en posición. En espera.',time:'14:20'}],
+  a2:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'Pelotón Alpha en espera.',time:'13:55',system:true}],
+  a3:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'Logística en espera.',time:'13:55',system:true}],
+  s1:[{author:'[REDACTADO]',avatar:'??',role:'secret',text:'Activo confirmado en zona delta.',time:'14:21'}],
+  s2:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'Canal SEC-02 activo.',time:'14:00',system:true}],
+  s3:[{author:'SISTEMA',avatar:'SYS',role:'sys',text:'Canal extracción en espera.',time:'14:00',system:true}],
+};
+
+function renderRadioPanel(navId){
+  const roleKey = navId==='secreto_radio'?'secreto':cu.role;
+  const rd = RADIOS_DEF[roleKey]||RADIOS_DEF['policia'];
+  if(!radioState[rd.id]){
+    radioState[rd.id]={activeChannel:rd.channels[0].id,muted:false};
+    radioLogs[rd.id]=JSON.parse(JSON.stringify(SEED_MSGS));
+  }
+  const rs=radioState[rd.id];
+  const activeCh=rd.channels.find(c=>c.id===rs.activeChannel)||rd.channels[0];
+  const msgs=radioLogs[rd.id][activeCh.id]||[];
+  return `<div class="radio-unit ${rd.cls}" id="radioUnit">
+    <div class="r-unit-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="r-unit-name ${rd.cls}">${rd.label}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="signal-bar ${rs.muted?'':'active'}" id="radioSig"><span></span><span></span><span></span><span></span><span></span></div>
+        <span class="freq-display">${rd.freq} MHz</span>
+        <span class="${rs.muted?'muted-badge':'onair-badge'}" id="radioBadge">${rs.muted?'MUTED':'ON AIR'}</span>
+      </div>
+    </div>
+    <div class="r-unit-body">
+      <div class="channels-col">
+        <div class="channels-label">Canales</div>
+        ${rd.channels.map(ch=>`
+        <div class="ch-item ${ch.id===rs.activeChannel?'active-ch '+rd.cls:''}" onclick="radioSwitchCh('${rd.id}','${ch.id}','${navId}')">
+          <span class="ch-dot"></span>
+          <div class="ch-info">
+            <div class="ch-name">${ch.name}</div>
+            <div class="ch-sub">${ch.sub}</div>
+          </div>
+          <span class="ch-users">${ch.users}</span>
+        </div>`).join('')}
+      </div>
+      <div class="chat-col">
+        <div class="webhook-notice"><span class="webhook-dot"></span>Discord #${rd.id}-${activeCh.name.toLowerCase().replace(/\s/g,'-').replace(/[^a-z0-9-]/g,'')} · Webhook activo</div>
+        <div class="chat-ch-header">
+          <div>
+            <span class="chat-ch-name">${activeCh.name}</span>
+            <span style="font-size:10px;color:var(--txt2);"> · ${activeCh.sub}</span>
+          </div>
+          <div class="chat-ch-status"><span class="online-dot"></span>${activeCh.users} conectados</div>
+        </div>
+        <div class="messages-area" id="radioMsgs">${renderMsgs(msgs)}</div>
+        <div class="r-input-row">
+          <input type="text" id="radioInput" placeholder="Transmitir en ${activeCh.name}..." onkeydown="if(event.key==='Enter')radioSend('${rd.id}','${navId}')" />
+          <button class="mute-btn ${rs.muted?'muted':''}" id="radioMuteBtn" onclick="radioToggleMute('${rd.id}')">${rs.muted?'🔇':'🔊'}</button>
+          <button class="ptt-btn ${rd.cls}" onclick="radioSend('${rd.id}','${navId}')">PTT</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function radioSwitchCh(rdId,chId,navId){
+  radioState[rdId].activeChannel=chId;
+  if(!radioLogs[rdId][chId])radioLogs[rdId][chId]=[];
+  document.getElementById('contentArea').innerHTML=renderRadioPanel(navId);
+  const el=document.getElementById('radioMsgs');
+  if(el)el.scrollTop=el.scrollHeight;
+}
+
+function radioToggleMute(rdId){
+  radioState[rdId].muted=!radioState[rdId].muted;
+  const muted=radioState[rdId].muted;
+  const badge=document.getElementById('radioBadge');
+  const sig=document.getElementById('radioSig');
+  const btn=document.getElementById('radioMuteBtn');
+  if(badge){badge.className=muted?'muted-badge':'onair-badge';badge.textContent=muted?'MUTED':'ON AIR';}
+  if(sig)sig.className='signal-bar'+(muted?'':' active');
+  if(btn){btn.className='mute-btn'+(muted?' muted':'');btn.textContent=muted?'🔇':'🔊';}
+}
+
+function radioSend(rdId,navId){
+  const inp=document.getElementById('radioInput');
+  const text=(inp?.value||'').trim();
+  if(!text)return;
+  if(radioState[rdId].muted){if(inp)inp.placeholder='! Radio silenciada';return;}
+  const chId=radioState[rdId].activeChannel;
+  if(!radioLogs[rdId][chId])radioLogs[rdId][chId]=[];
+  radioLogs[rdId][chId].push({author:cu.name||'[TÚ]',avatar:initials(cu.name||'YO'),role:rdId==='police'?'police':rdId==='ems'?'ems':rdId==='army'?'army':'secret',text,time:getShortTime()});
+  if(inp)inp.value='';
+  const el=document.getElementById('radioMsgs');
+  if(el){el.innerHTML=renderMsgs(radioLogs[rdId][chId]);el.scrollTop=el.scrollHeight;}
+  setTimeout(()=>{
+    if(Math.random()<0.5)return;
+    const names={police:['Control','H-50','ADAM-10','TÁCTICO 1'],ems:['Despacho','Ambulancia-2'],army:['Sargento-R','Coronel-R'],secret:['[REDACTADO]','Agente-K']};
+    const avts={police:['CTL','H50','A10','TAC'],ems:['DES','AMB'],army:['SGT','COR'],secret:['??','AK']};
+    const replies=['10-4, recibido.','Copiado. En ruta.','Confirmado, unidad en posición.','Recibido. Notificando mando.'];
+    const idx=Math.floor(Math.random()*(names[rdId]||['Unidad']).length);
+    radioLogs[rdId][chId].push({author:(names[rdId]||['Unidad'])[idx],avatar:(avts[rdId]||['UN'])[idx]||'UN',role:rdId,text:replies[Math.floor(Math.random()*replies.length)],time:getShortTime()});
+    if(radioState[rdId].activeChannel===chId){const el2=document.getElementById('radioMsgs');if(el2){el2.innerHTML=renderMsgs(radioLogs[rdId][chId]);el2.scrollTop=el2.scrollHeight;}}
+  },900+Math.random()*1200);
+}
+
+function startClock(){
+  function tick(){
+    const now=new Date();
+    const cl=document.getElementById('clockDisplay');
+    const dt=document.getElementById('dateDisplay');
+    const st=document.getElementById('serviceTimer');
+    const pst=document.getElementById('pfServiceTimer');
+    if(cl)cl.textContent=now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if(dt)dt.textContent=now.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    if(serviceStart){
+      const diff=Math.floor((Date.now()-serviceStart)/1000);
+      const h=String(Math.floor(diff/3600)).padStart(2,'0');
+      const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
+      const s=String(diff%60).padStart(2,'0');
+      const str=`${h}:${m}:${s}`;
+      if(st)st.textContent=str;
+      if(pst)pst.textContent=str;
+    }
+  }
+  tick();setInterval(tick,1000);
+}
+</script>
